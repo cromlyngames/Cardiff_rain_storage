@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+
+## example_function_name
+## ExampleVariableName
+
+import random
+
+def get_block_of_days(MonthX):
+    
+## generates a block of days until it rains again
+## current iteration ignores the month and returns average iteration for watering months
+## this underestimates frequency of rain in winter
+    BlockFreqLookupTable={
+    0 : 0.684449093444909,
+    1 : 0.118200836820084,
+    2 : 0.0753138075313808,
+    3 : 0.0352161785216179,
+    4 : 0.0209205020920502,
+    5 : 0.0135983263598326,
+    6 : 0.0125523012552301,
+    7 : 0.00906555090655509,
+    8 : 0.00488145048814505,
+    9 : 0.00488145048814505,
+    10 : 0.00627615062761506,
+    11 : 0.00453277545327755,
+    12 : 0.00278940027894003,
+    13 : 0.00209205020920502,
+    14 : 0.00139470013947001,
+    15 : 0.000697350069735007,
+    16 : 0.000697350069735007,
+    17 : 0.00104602510460251,
+    18 : 0.000348675034867503,
+    19 : 0.000348675034867503,
+    20 : 0.000697350069735007,
+    21 : 0,
+    }
+
+    Target = random.random()
+    diff = float('inf')
+    for key,value in BlockFreqLookupTable.items():
+        if diff > abs(Target-value):
+            diff = abs(Target-value)
+            BlockOfDays = key
+    
+
+
+    
+    return(BlockOfDays)
+    ## 0 means it rains the next day as well as today.
+    ## yes, in my 20 year data set, cardiff has NEVER had 3 weeks or more without rain.
+
+
+def water_the_garden(StoredVol):
+    StoredVol = StoredVol-40/7
+    ## assumes 40 Liters a week watering. BIG assumption
+    return(StoredVol)
+
+def water_the_greenhouse(StoredVol):
+    StoredVol = StoredVol-10/7
+    ## assumes 10 liters a week for greenhouses, seedlings, leaks, evaporation ect.
+    return(StoredVol)
+
+def record_shortage(MonthX, StoredVol):
+    ## records total number of dry days by month
+    ## records total missing volume too
+    ## further accuracy likely to be misleading
+    print("dry day in Month ", MonthX)
+    
+def add_rain_to_storage(MonthX, StoredVol):
+    MedianRainByMonth =[ ## Cardiff Bute Park, Met office data
+        0,
+        137.25,
+        74.95,
+        79.2,
+        70.2,
+        75.2,
+        64.9,
+        69.7,
+        74.2,
+        81.2,
+        124.5,
+        113.25,
+        128,
+        137.25 ## jan again
+        ]
+    
+    AverageRainyDaysByMonth=[ ## Stolford, 2 decades
+         0,
+         19.9,
+         16.5,
+         13.9,
+         14.9,
+         17.7,
+         14.9,
+         17.3,
+         16.6,
+         14.9,
+         20.2,
+         20.4,
+         19.3,
+         19.9 ## jan again
+         ]
+    RainInMM = MedianRainByMonth[MonthX]/AverageRainyDaysByMonth[MonthX]
+    RainVol = RainInMM*CollectorArea ## mm*m2 = liters
+    StoredVol = min(StoredVol + RainVol, StorageVolume) ## lose what you can't store
+    return(StoredVol)        
+
+def update_month(DayCount):
+    x= 0
+    DaysPerMonth = [
+        0,
+        31, 28, 31,
+        30, 31, 30,
+        31, 30, 31,
+        30, 31, 30,
+        25
+        ]
+    while DayCount >0:
+        x=x+1
+        if x==13:
+            x = 1
+       # print(x, DayCount)
+        DayCount = DayCount - DaysPerMonth[x]
+    MonthX = x
+    return(MonthX)
+
+
+def one_block_of_days(DayCounter, MonthX, StoredVol):
+    ## carries out a block of days between rainy days, then does the final accounting for that rainy day                
+    DayCounterCheck = DayCounter +get_block_of_days(MonthX)
+   # print('one block', DayCounter, DayCounterCheck, DayCounterCheck-DayCounter)
+    for x in range(DayCounter, DayCounterCheck):
+        if 3 <= MonthX <= 11:
+            StoredVol = water_the_garden(StoredVol)
+        StoredVol = water_the_greenhouse(StoredVol)
+        if StoredVol<0:
+            record_shortage(MonthX, StoredVol)
+            StoredVol=0.0
+    ## after the dry days we have the rainy day at the end of the block        
+    DayCounter = DayCounterCheck +1
+    MonthX = update_month(DayCounter)
+    add_rain_to_storage(MonthX, StoredVol)
+    StoredVol = water_the_greenhouse(StoredVol)  ## order here allows the rain to maybe refill the water storage enough before you need to water
+    if StoredVol<0:
+            record_shortage(MonthX, StoredVol)
+            StoredVol=0.0
+    return(DayCounter, MonthX, StoredVol)
+
+
+
+## start main
+DayCounter = 1
+MonthX = 12  ## start on First of December. Gives rain storage all winter to build up before watering starts in March
+StoredVol = 40.0  ## start with some water to cover the fixed 10liter a week, even in winter
+StorageVolume = 1000 ## in liters
+CollectorArea = 2 ## in m2
+
+
+while DayCounter < 365:
+    DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol)
+
