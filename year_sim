@@ -64,8 +64,7 @@ def record_shortage(MonthX, StoredVol):
     ## records total number of dry days by month
     ## records total missing volume too
     ## further accuracy likely to be misleading
-    OutputAsTuple= ("dry day in Month ", MonthX, "needs", StoredVol, "for", CollectorArea, StorageVolume)
-    OutputLine = str(OutputAsTuple)
+    OutputLine= "dry day in Month "+ str(MonthX) +"  needs  "+ str(StoredVol) +"  for  " +str(CollectorArea)+" "+ str(StorageVolume)+"\n"
     f.write(OutputLine)
 
     
@@ -162,6 +161,7 @@ f=open('WaterResults', 'w')
 
 for CollectorArea in range (1, 25):
     for StorageVolume in range(100, 3000, 100):
+        print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
         while DayCounter < 365*10000:
             DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol)
 
