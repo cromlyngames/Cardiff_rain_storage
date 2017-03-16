@@ -64,7 +64,10 @@ def record_shortage(MonthX, StoredVol):
     ## records total number of dry days by month
     ## records total missing volume too
     ## further accuracy likely to be misleading
-    print("dry day in Month ", MonthX)
+    OutputAsTuple= ("dry day in Month ", MonthX, "needs", StoredVol, "for", CollectorArea, StorageVolume)
+    OutputLine = str(OutputAsTuple)
+    f.write(OutputLine)
+
     
 def add_rain_to_storage(MonthX, StoredVol):
     MedianRainByMonth =[ ## Cardiff Bute Park, Met office data
@@ -155,7 +158,10 @@ StoredVol = 40.0  ## start with some water to cover the fixed 10liter a week, ev
 StorageVolume = 1000 ## in liters
 CollectorArea = 2 ## in m2
 
+f=open('WaterResults', 'w')
 
-while DayCounter < 365:
-    DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol)
+for CollectorArea in range (1, 25):
+    for StorageVolume in range(100, 3000, 100):
+        while DayCounter < 365*10000:
+            DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol)
 
