@@ -3,6 +3,8 @@
 ## example_function_name
 ## ExampleVariableName
 
+## This is the verification version of the rain function. It outputs rainfall in mm, to allow the rain distribution to be corss checked against real data
+
 import random
 
 def get_block_of_days(MonthX):
@@ -64,8 +66,9 @@ def record_shortage(MonthX, StoredVol):
     ## records total number of dry days by month
     ## records total missing volume too
     ## further accuracy likely to be misleading
-    OutputLine= "dry day in Month "+ str(MonthX) +"  needs  "+ str(StoredVol) +"  for  " +str(CollectorArea)+" "+ str(StorageVolume)+"\n"
-    f.write(OutputLine)
+    #OutputLine= "dry day in Month "+ str(MonthX) +"  needs  "+ str(StoredVol) +"  for  " +str(CollectorArea)+" "+ str(StorageVolume)+"\n"
+    #f.write(OutputLine)
+    return()
 
     
 def add_rain_to_storage(MonthX, StoredVol):
@@ -105,6 +108,9 @@ def add_rain_to_storage(MonthX, StoredVol):
     RainInMM = MedianRainByMonth[MonthX]/AverageRainyDaysByMonth[MonthX]
     RainVol = RainInMM*CollectorArea ## mm*m2 = liters
     StoredVol = min(StoredVol + RainVol, StorageVolume) ## lose what you can't store
+
+    OutputLine = str(RainInMM)+"  " +str(MonthX)+ "  \n"
+    f.write(OutputLine)
     return(StoredVol)        
 
 def update_month(DayCount):
@@ -157,11 +163,15 @@ StoredVol = 40.0  ## start with some water to cover the fixed 10liter a week, ev
 StorageVolume = 1000 ## in liters
 CollectorArea = 2 ## in m2
 
-f=open('WaterResults', 'w')
+f=open('WaterVerficationResults', 'w')
 
-for CollectorArea in range (1, 25):
-    for StorageVolume in range(100, 3000, 100):
-        print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
-        while DayCounter < 365*10000:
-            DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol)
+#for CollectorArea in range (1, 25):
+#   for StorageVolume in range(100, 3000, 100):
+#        print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
+for years in range (1,10000):
+    DayCounter=1
+    print(years)
+    while DayCounter < 365:
+        DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol)
+            
 
