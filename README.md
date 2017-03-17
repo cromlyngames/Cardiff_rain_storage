@@ -18,3 +18,7 @@ The simualtion will be run for a certain sized collector and a certain sized sto
 The simulation will be run repeatedly to allow the different random factors to play out. The user must decide what the longest time without water they would accept and what probability for that they would allow. Ie is a 1% chance of 3 days drought acceptable?
 
 
+## Verification
+Verification checks have been carried out on the Verification Branch.
+Output is collected at the monthly level of rainfall, and the simualtion run for 10000 years.
+At version 1, overestimation for rain in January is persistant. Needs to be resolved.
