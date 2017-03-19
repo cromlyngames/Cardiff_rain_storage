@@ -115,20 +115,23 @@ def add_rain_to_storage(MonthX, StoredVol, YearsRain):
 
 def update_month(DayCount):
     x= 0
+    DayCountThisYear = DayCount
+    while DayCountThisYear >365:
+        DayCountThisYear = DayCountThisYear-365
     DaysPerMonth = [
         0,
         31, 28, 31,
         30, 31, 30,
         31, 30, 31,
         30, 31, 30,
-        25
+        0
         ]
-    while DayCount >0:
+    while DayCountThisYear >0:
         x=x+1
         if x==13:
             x = 1
        # print(x, DayCount)
-        DayCount = DayCount - DaysPerMonth[x]
+        DayCountThisYear = DayCountThisYear - DaysPerMonth[x]
     MonthX = x
     return(MonthX)
 
@@ -168,12 +171,13 @@ f=open('WaterVerficationResults', 'w')
 #for CollectorArea in range (1, 25):
 #   for StorageVolume in range(100, 3000, 100):
 #        print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
-for years in range (1,10000):
+for years in range (1,1000):
     DayCounter=1
     YearsRain = [0, 0,0,0,0,0,0, 0,0,0,0,0,0]
     print(years)
-    while DayCounter < 365:
+    while DayCounter < 365*10:
         DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol, YearsRain)
+    
     OutputLine = str(YearsRain) +"  \n"
     f.write(OutputLine)
             
