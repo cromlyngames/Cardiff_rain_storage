@@ -108,7 +108,7 @@ def add_rain_to_storage(MonthX, StoredVol):
     print("rained liters", RainVol)
     StoredVol = StoredVol + RainVol
     if StoredVol > StorageVolume: ## lose what you can't store
-        StoredVol == StorageVolume
+        StoredVol = StorageVolume
     print("new stored Vol = ",StoredVol, "StorageVolume is ", StorageVolume)
     return(StoredVol)        
 
@@ -139,18 +139,19 @@ def one_block_of_days(DayCounterLocal, MonthX, StoredVol, RecordThis):
     for x in range(DayCounterLocal, DayCounterCheck):
         if x >365:
             return(DayCounterLocal, MonthX, StoredVol)  ## cuts off the year to stop overspill into Jan        
-        print(x, StoredVol)
+        print("dry day", x, StoredVol)
         if 3 <= MonthX <= 11:
             StoredVol = water_the_garden(StoredVol)
         StoredVol = water_the_greenhouse(StoredVol)  ## happens all year around
-        if StoredVol<0:
+        if StoredVol<0.0:
             record_shortage(MonthX, StoredVol, RecordThis)
             StoredVol=0.0
     ## after the dry days we have the rainy day at the end of the block
          
     DayCounterLocal = DayCounterCheck +1
     MonthX = update_month(DayCounterLocal)
-    add_rain_to_storage(MonthX, StoredVol)
+    StoredVol = add_rain_to_storage(MonthX, StoredVol)
+    print("rain day", DayCounterLocal, StoredVol)
     StoredVol = water_the_greenhouse(StoredVol)  ## order here allows the rain to maybe refill the water storage enough before you need to water
     if StoredVol<0:
             record_shortage(MonthX, StoredVol, RecordThis)
@@ -173,7 +174,7 @@ def initalise_year(MonthX, StoredVol):
 ## start main
 DayCounter = 1
 MonthX = 1  ## start on First of Jan for obviousness. Uses an intialiser year to balance this out for actual data years. Gives rain storage all winter to build up before watering starts in March
-StorageVolume = 1000 ## in liters
+StorageVolume = 1000.0 ## in liters
 CollectorArea = 2 ## in m2
 GardenAllowance = 40 ## liters per week
 GreenhouseAllowance = 10 ## liters per week
