@@ -3,8 +3,6 @@
 ## example_function_name
 ## ExampleVariableName
 
-## This is the verification version of the rain function. It outputs rainfall in mm, to allow the rain distribution to be corss checked against real data
-
 import random
 
 def get_block_of_days(MonthX):
@@ -53,25 +51,25 @@ def get_block_of_days(MonthX):
 
 
 def water_the_garden(StoredVol):
-    StoredVol = StoredVol-40/7
+    StoredVol = StoredVol-GardenAllowance/7
     ## assumes 40 Liters a week watering. BIG assumption
     return(StoredVol)
 
 def water_the_greenhouse(StoredVol):
-    StoredVol = StoredVol-10/7
+    StoredVol = StoredVol-GreenhouseAllowance/7
     ## assumes 10 liters a week for greenhouses, seedlings, leaks, evaporation ect.
     return(StoredVol)
 
-def record_shortage(MonthX, StoredVol):
+def record_shortage(MonthX, StoredVol, RecordThis):
     ## records total number of dry days by month
     ## records total missing volume too
     ## further accuracy likely to be misleading
-    #OutputLine= "dry day in Month "+ str(MonthX) +"  needs  "+ str(StoredVol) +"  for  " +str(CollectorArea)+" "+ str(StorageVolume)+"\n"
-    #f.write(OutputLine)
-    return()
+    if RecordThis == True:
+        OutputLine= "dry day in Month "+ str(MonthX) +"  needs  "+ str(StoredVol) +"  for  " +str(CollectorArea)+" "+ str(StorageVolume)+"\n"
+        f.write(OutputLine)
 
     
-def add_rain_to_storage(MonthX, StoredVol, YearsRain):
+def add_rain_to_storage(MonthX, StoredVol):
     MedianRainByMonth =[ ## Cardiff Bute Park, Met office data
         0,
         137.25,
@@ -107,78 +105,108 @@ def add_rain_to_storage(MonthX, StoredVol, YearsRain):
          ]
     RainInMM = MedianRainByMonth[MonthX]/AverageRainyDaysByMonth[MonthX]
     RainVol = RainInMM*CollectorArea ## mm*m2 = liters
-    StoredVol = min(StoredVol + RainVol, StorageVolume) ## lose what you can't store
-
-    YearsRain[MonthX] = YearsRain[MonthX] + RainInMM
-    
-    return(StoredVol, YearsRain)        
+    print("rained liters", RainVol)
+    StoredVol = StoredVol + RainVol
+    if StoredVol > StorageVolume: ## lose what you can't store
+        StoredVol = StorageVolume
+    print("new stored Vol = ",StoredVol, "StorageVolume is ", StorageVolume)
+    return(StoredVol)        
 
 def update_month(DayCount):
     x= 0
-    DayCountThisYear = DayCount
-    while DayCountThisYear >365:
-        DayCountThisYear = DayCountThisYear-365
     DaysPerMonth = [
         0,
         31, 28, 31,
         30, 31, 30,
         31, 30, 31,
         30, 31, 30,
-        0
+        25
         ]
-    while DayCountThisYear >0:
+    while DayCount >0:
         x=x+1
         if x==13:
             x = 1
        # print(x, DayCount)
-        DayCountThisYear = DayCountThisYear - DaysPerMonth[x]
+        DayCount = DayCount - DaysPerMonth[x]
     MonthX = x
     return(MonthX)
 
 
-def one_block_of_days(DayCounter, MonthX, StoredVol, YearsRain):
+def one_block_of_days(DayCounterLocal, MonthX, StoredVol, RecordThis):
     ## carries out a block of days between rainy days, then does the final accounting for that rainy day                
-    DayCounterCheck = DayCounter +get_block_of_days(MonthX)
+    DayCounterCheck = DayCounterLocal +get_block_of_days(MonthX)
    # print('one block', DayCounter, DayCounterCheck, DayCounterCheck-DayCounter)
-    for x in range(DayCounter, DayCounterCheck):
+    for x in range(DayCounterLocal, DayCounterCheck):
+        if x >365:
+            return(DayCounterLocal, MonthX, StoredVol)  ## cuts off the year to stop overspill into Jan        
+        print("dry day", x, StoredVol)
         if 3 <= MonthX <= 11:
             StoredVol = water_the_garden(StoredVol)
-        StoredVol = water_the_greenhouse(StoredVol)
-        if StoredVol<0:
-            record_shortage(MonthX, StoredVol)
+        StoredVol = water_the_greenhouse(StoredVol)  ## happens all year around
+        if StoredVol<0.0:
+            record_shortage(MonthX, StoredVol, RecordThis)
             StoredVol=0.0
-    ## after the dry days we have the rainy day at the end of the block        
-    DayCounter = DayCounterCheck +1
-    MonthX = update_month(DayCounter)
-    StoredVol, YearsRain = add_rain_to_storage(MonthX, StoredVol, YearsRain)
+    ## after the dry days we have the rainy day at the end of the block
+         
+    DayCounterLocal = DayCounterCheck +1
+    MonthX = update_month(DayCounterLocal)
+    StoredVol = add_rain_to_storage(MonthX, StoredVol)
+    print("rain day", DayCounterLocal, StoredVol)
     StoredVol = water_the_greenhouse(StoredVol)  ## order here allows the rain to maybe refill the water storage enough before you need to water
     if StoredVol<0:
-            record_shortage(MonthX, StoredVol)
+            record_shortage(MonthX, StoredVol, RecordThis)
             StoredVol=0.0
-    return(DayCounter, MonthX, StoredVol)
+    return(DayCounterLocal, MonthX, StoredVol)
 
-
+def initalise_year(MonthX, StoredVol):
+    InitialYearDay=1
+    RecordThis = False
+    while InitialYearDay <365:
+        InitialYearDay, MonthX, StoredVol = one_block_of_days(InitialYearDay, MonthX, StoredVol, RecordThis)
+    if MonthX != 1:
+        print("ERROR: MonthX not jan after inital year.")
+        quit()
+    print("inital year complete. Start stored vol for model is ", StoredVol)
+    return(StoredVol)
+        
+    
 
 ## start main
 DayCounter = 1
-MonthX = 12  ## start on First of December. Gives rain storage all winter to build up before watering starts in March
-StoredVol = 40.0  ## start with some water to cover the fixed 10liter a week, even in winter
-StorageVolume = 1000 ## in liters
+MonthX = 1  ## start on First of Jan for obviousness. Uses an intialiser year to balance this out for actual data years. Gives rain storage all winter to build up before watering starts in March
+StorageVolume = 1000.0 ## in liters
 CollectorArea = 2 ## in m2
+GardenAllowance = 40 ## liters per week
+GreenhouseAllowance = 10 ## liters per week
+f=open('WaterResults', 'w')
+g=open('WaterVerficationResults', 'w')
 
-f=open('WaterVerficationResults', 'w')
+RunRainVerification = True
+RunCollectionCheck = False
 
 #for CollectorArea in range (1, 25):
 #   for StorageVolume in range(100, 3000, 100):
 #        print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
-for years in range (1,1000):
-    DayCounter=1
-    YearsRain = [0, 0,0,0,0,0,0, 0,0,0,0,0,0]
-    print(years)
-    while DayCounter < 365*10:
-        DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol, YearsRain)
-    
-    OutputLine = str(YearsRain) +"  \n"
-    f.write(OutputLine)
-            
+if RunRainVerification == True:
+    for years in range (1,10000):
+        DayCounter=1
+        YearsRain = [0, 0,0,0,0,0,0, 0,0,0,0,0,0]
+        StoredVol = 350.0
+        print(years)
+        while DayCounter < 365:
+            DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol, YearsRain)
+        
+        OutputLine = str(YearsRain) +"  \n"
+        g.write(OutputLine)
+
+
+if RunCollectionCheck == True:
+    for CollectorArea in range (1, 25):
+        for StorageVolume in range(100, 3000, 100):
+            print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
+            StoredVol = 350.0 ## start with some water to cover the fixed 10liter a week, even in winter
+            StoredVol = initalise_year(MonthX, StoredVol)
+            while DayCounter < 365:
+                RecordThis = True
+                DayCounter, MonthX, StoredVol = one_block_of_days(DayCounter, MonthX, StoredVol, RecordThis)
 
