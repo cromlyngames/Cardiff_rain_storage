@@ -206,7 +206,7 @@ GreenhouseAllowance = 10.0 ## liters per week
 
 
 
-RunRainVerification = False
+RunRainVerification = True
 RunCollectionCheck = True
 
 #for CollectorArea in range (1, 25):
@@ -230,8 +230,8 @@ if RunRainVerification == True:
 
 if RunCollectionCheck == True:
     h= open('ResultsSummary','w')
-    for CollectorArea in range (1, 25):
-        for StorageVolume in range(100, 3000, 100):
+    for CollectorArea in range (1, 5):    ## one perch is ~ 25.29 m2
+        for StorageVolume in range(100, 1500, 100):
             print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
             OutputFilename = str(CollectorArea) +"m2-"+str(StorageVolume)+"liter"
             f=open(OutputFilename, 'w')
@@ -239,7 +239,7 @@ if RunCollectionCheck == True:
             YearsRain = [0, 0,0,0,0,0,0, 0,0,0,0,0,0]
             YearSummary = [0, 0,0,0,0,0,0, 0,0,0,0,0,0]
             StoredVol = initalise_year(MonthX, StoredVol)
-            for years in range (0,10):
+            for years in range (0,1000):
                 print(years)
                 DayCounter =1
                 YearSummary[0] = StoredVol 
