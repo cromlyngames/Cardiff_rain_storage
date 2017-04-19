@@ -125,11 +125,11 @@ def add_rain_to_storage(MonthX, StoredVol, YearsRain):
     
     RainInMM = MedianRainByMonth[MonthX]/AverageRainyDaysByMonth[MonthX] *ForcedCorrelationFactor[MonthX]
     RainVol = RainInMM*CollectorArea ## mm*m2 = liters
-    print("rained liters", RainVol)
+    #print("rained liters", RainVol)
     StoredVol = StoredVol + RainVol
     if StoredVol > StorageVolume: ## lose what you can't store
         StoredVol = StorageVolume
-    print("new stored Vol = ",StoredVol, "StorageVolume is ", StorageVolume)
+   # print("new stored Vol = ",StoredVol, "StorageVolume is ", StorageVolume)
     YearsRain[MonthX] = YearsRain[MonthX] + RainInMM
     return(StoredVol, YearsRain)        
 
@@ -160,7 +160,7 @@ def one_block_of_days(DayCounterLocal, MonthX, StoredVol, YearsRain, YearSummary
     for x in range(DayCounterLocal, DayCounterCheck):
         if x >365:
             return(DayCounterLocal, MonthX, StoredVol, YearsRain, YearSummary)  ## cuts off the year to stop overspill into Jan        
-        print("dry day", x, StoredVol)
+     #   print("dry day", x, StoredVol)
         if 3 <= MonthX <= 11:
             StoredVol = water_the_garden(StoredVol)
         StoredVol = water_the_greenhouse(StoredVol)  ## happens all year around
@@ -173,7 +173,7 @@ def one_block_of_days(DayCounterLocal, MonthX, StoredVol, YearsRain, YearSummary
     DayCounterLocal = DayCounterCheck +1
     MonthX = update_month(DayCounterLocal)
     StoredVol, YearsRain = add_rain_to_storage(MonthX, StoredVol, YearsRain)
-    print("rain day", DayCounterLocal, StoredVol)
+    #print("rain day", DayCounterLocal, StoredVol)
     StoredVol = water_the_greenhouse(StoredVol)  ## order here allows the rain to maybe refill the water storage enough before you need to water
     if StoredVol<0:
             record_shortage(MonthX, StoredVol, RecordThis)
@@ -203,8 +203,8 @@ CollectorArea = 2.0 ## in m2
 GardenAllowance = 40.0 ## liters per week
 GreenhouseAllowance = 10.0 ## liters per week
 
-g=open('WaterVerficationResults', 'w')
-h= open('ResultsSummary','w')
+
+
 
 RunRainVerification = False
 RunCollectionCheck = True
@@ -213,6 +213,7 @@ RunCollectionCheck = True
 #   for StorageVolume in range(100, 3000, 100):
 #        print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
 if RunRainVerification == True:
+    g=open('WaterVerficationResults', 'w')
     for years in range (1,300):
         print("RunRain Verification year:", years)
         DayCounter=1
@@ -220,7 +221,7 @@ if RunRainVerification == True:
         YearsRain = [0, 0,0,0,0,0,0, 0,0,0,0,0,0]
         StoredVol = 350.0
         RecordThis = True
-        print(years)
+        #print(years)
         while DayCounter < 365:
             DayCounter, MonthX, StoredVol, YearsRain, YearSummary = one_block_of_days(DayCounter, MonthX, StoredVol, YearsRain, YearSummary, RecordThis)       
         OutputLine = str(YearsRain) +"  \n"
@@ -228,6 +229,7 @@ if RunRainVerification == True:
 
 
 if RunCollectionCheck == True:
+    h= open('ResultsSummary','w')
     for CollectorArea in range (1, 25):
         for StorageVolume in range(100, 3000, 100):
             print("starting ", CollectorArea, "m2 and ", StorageVolume,"liters")
@@ -236,9 +238,13 @@ if RunCollectionCheck == True:
             StoredVol = 350.0 ## start with some water to cover the fixed 10liter a week, even in winter
             YearsRain = [0, 0,0,0,0,0,0, 0,0,0,0,0,0]
             YearSummary = [0, 0,0,0,0,0,0, 0,0,0,0,0,0]
-            StoredVol = initalise_year(MonthX, StoredVol)            
-            while DayCounter < 365:
-                RecordThis = True
-                DayCounter, MonthX, StoredVol, YearsRain, YearSummary = one_block_of_days(DayCounter, MonthX, StoredVol, YearsRain, YearSummary, RecordThis)
-            SummaryOutput = OutputFilename + str(YearSummary) +"  \n"
-            h.write(SummaryOutput)
+            StoredVol = initalise_year(MonthX, StoredVol)
+            for years in range (0,10):
+                print(years)
+                DayCounter =1
+                YearSummary[0] = StoredVol 
+                while DayCounter < 365:
+                    RecordThis = True
+                    DayCounter, MonthX, StoredVol, YearsRain, YearSummary = one_block_of_days(DayCounter, MonthX, StoredVol, YearsRain, YearSummary, RecordThis)
+                SummaryOutput = OutputFilename + str(YearSummary) +"  \n"
+                h.write(SummaryOutput)
