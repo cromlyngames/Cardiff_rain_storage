@@ -1,0 +1,29 @@
+## targets based on met office monthly data
+Row Labels	  Average of rain	StdDev of rain	StdDevp of rain
+1	             127.425	      60.61179013	  59.84934732
+2	             89.0475	      49.09225218	  48.47471499
+3	              88.52564103	  44.66502646	  44.08867939
+4	              65.86666667	  38.2410384	  37.74758497
+5	              75.72307692	  40.7776736	  40.25148802
+6	              69.77435897	  41.79887758	  41.25951463
+7	              76.62564103	  44.51739883	  43.94295672
+8	              95.01282051	  58.55597942	  57.80038674
+9	              87.6225	      49.43868768	  48.81679264
+10	            124.3675	    57.02466128	  56.30734138
+11	            125.6875  	  50.63449816	  49.99756088
+12	            131.4	        57.07990351	  56.36188872
+
+## decision. use stdev, not stdevp. Data was last twenty years, but results outside of the sample are very possible .
+
+
+## 
+##  hypothesis. the rainfall on two days in the same month is largely indepentdent
+## therefore The variance of rainfall between two januaries will be smaller than 
+## the variance in rainfall between two rainy days in january.
+
+## the vairance of the two would be related.
+
+## Method - generate probailty tables for simple, round, rainfalls. 
+## Run for 50 years.
+## Test against average and stdev against met office values
+## If much better than previous option, keep it. If much worse, revert. If mixed, mix the probality tables (genetic alog whoo!)
