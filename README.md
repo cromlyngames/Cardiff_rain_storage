@@ -24,4 +24,4 @@ Verification checks have been carried out on the Verification Branch.
 Output is collected at the monthly level of rainfall, and the simualtion run for 10000 years.
 At version 1, overestimation for rain in January is persistant. Needs to be resolved.
 At version 2, overflow into january was resolved, but consistent errors were found against met office average. 'fixed' by applying a multiplier to the monthly median rain on rainy days. 
-At version 3 errors trace around 1-2% variance against the met office average
+At version 3 errors trace around 1-2% variance against the met office average but does not stress test suffciently
